@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adivina lo que me gusta</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        #video-fondo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        .contenedor-juego {
+            border: 5px solid rgb(173, 115, 230);
+            padding: 20px;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 80%;
+            max-width: 600px;
+            z-index: 1;
+            display: none;
+        }
+
+        #titulo {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: rgb(78, 26, 126);
+        }
+
+        #pregunta {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: rgb(78, 26, 126);
+        }
+
+        #respuesta {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            border: 2px solid rgb(173, 115, 230);
+            border-radius: 8px;
+        }
+
+        #mensaje {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: rgb(173, 115, 230);
+        }
+
+        #tiempo {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: rgb(78, 26, 126);
+        }
+
+        #reiniciar {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: rgb(173, 115, 230);
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+
+        #iniciar-musica {
+            padding: 20px 40px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: rgb(173, 115, 230);
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop id="video-fondo">
+        <source src="hello.mp4" type="video/mp4">
+        <source src="URL_DE_TU_VIDEO.webm" type="video/webm">
+        Tu navegador no soporta videos HTML5.
+    </video>
+
+    <button id="iniciar-musica">¡Reproducir Música e Iniciar Juego!</button>
+
+    <audio id="musica-fondo">
+        <source src="amor.mp3" type="audio/mpeg">
+        <source src="URL_DE_TU_MUSICA.ogg" type="audio/ogg">
+        Tu navegador no soporta audio HTML5.
+    </audio>
+
+    <div class="contenedor-juego">
+        <div id="titulo">¡Adivina mis 5 cosas favoritas!</div>
+        <div id="pregunta"></div>
+        <input type="text" id="respuesta" placeholder="Tu respuesta">
+        <div id="mensaje"></div>
+        <div id="tiempo"></div>
+        <button id="reiniciar">Reiniciar Juego</button>
+    </div>
+
+    <script>
+        const preguntaElement = document.getElementById("pregunta");
+        const respuestaInput = document.getElementById("respuesta");
+        const mensajeElement = document.getElementById("mensaje");
+        const tiempoElement = document.getElementById("tiempo");
+        const reiniciarButton = document.getElementById("reiniciar");
+        const iniciarMusicaButton = document.getElementById("iniciar-musica");
+        const musicaFondo = document.getElementById("musica-fondo");
+        const contenedorJuego = document.querySelector(".contenedor-juego");
+
+        let preguntas = [
+            { pregunta: "¿pon el apodo de algo que me gusta tanto ", respuesta: "nomi,yo" },
+            { pregunta: "¿cuando es mi cumpleaño solo pon la fecha ejemplo;2/03/2024 ?", respuesta: "3/12/2009,03/12/2009" },
+            { pregunta: "¿esta respuesta esta facil el amor de mvd comienza con N nombre no apodo sjjs ?", respuesta: "noemy" },
+            { pregunta: "¿cual es mi cantante favorito", respuesta: "pop" },
+            { pregunta: "¿yo choy un bb y que nesecesito ?", respuesta: "titi,teta,chichi" }
+        ];
+
+        let preguntaActual;
+        let tiempoRestante;
+        let intervaloTiempo;
+        let preguntaIndex = 0;
+
+        function generarPregunta() {
+            if (preguntaIndex < preguntas.length) {
+                preguntaActual = preguntas[preguntaIndex];
+                preguntaElement.textContent = preguntaActual.pregunta;
+                respuestaInput.value = "";
+                mensajeElement.textContent = "";
+                tiempoRestante = 600;
+                tiempoElement.textContent = "Tiempo restante: 10:00";
+                iniciarTiempo();
+            } else {
+                clearInterval(intervaloTiempo);
+                mensajeElement.textContent = "¡Felicidades, mi campeona! ¡Has adivinado todo! ❤️";
+                respuestaInput.disabled = true;
+            }
+        }
+
+        function iniciarTiempo() {
+            intervaloTiempo = setInterval(() => {
+                tiempoRestante--;
+                let minutos = Math.floor(tiempoRestante / 60);
+                let segundos = tiempoRestante % 60;
+                tiempoElement.textContent = `Tiempo restante: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                if (tiempoRestante <= 0) {
+                    clearInterval(intervaloTiempo);
+                    mensajeElement.textContent = `¡Tiempo terminado! La respuesta era: ${preguntaActual.respuesta}`;
+                    respuestaInput.disabled = true;
+                }
+            }, 1000);
+        }
+
+        respuestaInput.addEventListener("keyup", (event) => {
+            if (event.key === "Enter") {
+                const respuestaUsuario = respuestaInput.value.toLowerCase();
+                const respuestasCorrectas = preguntaActual.respuesta.split(",");
+                if (respuestasCorrectas.some(respuesta => respuesta.trim() === respuestaUsuario)) {
+                    clearInterval(intervaloTiempo);
+                    mensajeElement.textContent = "¡Correcto!";
+                    preguntaIndex++;
+                    generarPregunta();
+                } else {
+                    mensajeElement.textContent = "¡Inténtalo de nuevo!";
+                }
+            }
+        });
+
+        reiniciarButton.addEventListener("click", () => {
+            if (preguntaIndex === preguntas.length) {
+                window.location.href = "sorpresa.html"; // Reemplaza con la URL deseada
+            } else {
+                clearInterval(intervaloTiempo);
+                preguntaIndex = 0;
+                respuestaInput.disabled = false;
+                generarPregunta();
+            }
+        });
+
+        iniciarMusicaButton.addEventListener("click", () => {
+            musicaFondo.play();
+            contenedorJuego.style.display = "block";
+            iniciarMusicaButton.style.display = "none";
+            generarPregunta();
+        });
+    </script>
+</body>
+</html>
